@@ -1,0 +1,96 @@
+ <!DOCTYPE html>
+<html>
+
+<head>
+<title>Account Creator</title>
+<meta charset="utf-8">
+<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+</head>
+
+<body>
+
+<input type="text" id="creator" placeholder="username" required="required" name="creator" />
+  <label for="creator">Creator Username</label></br>
+<input type="password" id="wifkey" placeholder="Private active key" required="required" name="wifkey" />
+  <label for="wifkey">Creator Private active key</label></br>
+
+
+Write or upload public keys in json
+<input type="file" id="fileobj" onchange="importFile()"><br>
+<input type="text" id="newaccountname" placeholder="new username" required="required" name="newaccountname" />
+  <label for="newaccountname">New Account Name</label></br>
+
+
+<input type="text" id="pubownerkey" placeholder="PUB Owner key" required="required" name="owner" />
+  <label for="owner">Public Owner</label></br>
+<input type="text" id="pubactivekey" placeholder="PUB Active key" required="required" name="active" />
+  <label for="active">Public active</label></br>
+<input type="text" id="pubpostingkey" placeholder="PUB Posting key" required="required" name="posting" />
+  <label for="posting">Public Posting</label></br>
+<input type="text" id="pubmemokey" placeholder="PUB memo key" required="required" name="memo" />
+  <label for="memo">Public memo</label></br>
+
+<input type="submit" class="enviar" onclick="Enviar();" value="Enviar" />
+<input type="submit" class="enviar" onclick="reset();" value="reset" />
+
+<div id="pubkeys" name="pubkeys"></div>
+<div id="resultado" name="resultado"></div>
+<script>
+function Enviar() {
+
+    var creator = document.getElementById("creator").value;
+    var fileobj = document.getElementById("fileobj").value;
+    console.log(fileobj);
+    var wifkey = document.getElementById("wifkey").value;
+    var newaccountname = document.getElementById("newaccountname").value;
+
+    var pub_ownerkey = document.getElementById("pubownerkey").value;
+    var pub_activekey = document.getElementById("pubactivekey").value;
+    var pub_postingkey = document.getElementById("pubpostingkey").value;
+    var pub_memokey = document.getElementById("pubmemokey").value;
+
+    document.getElementById("pubkeys").innerHTML = 'Account Name:' +newaccountname  + '<br>Owner: ' + pub_ownerkey + '<br> Active: ' + pub_activekey+ '<br> Posting: ' + pub_postingkey+ '<br> Memo: ' + pub_memokey;
+
+    if (newaccountname != "") {
+	hive.broadcast.accountCreate(wifkey, '3.000 HIVE', creator, newaccountname,
+	 {"weight_threshold": 1,"account_auths": [],"key_auths": [[pub_ownerkey,1]]},
+	 {"weight_threshold": 1,"account_auths": [],"key_auths": [[pub_activekey,1]]},
+	 {"weight_threshold": 1,"account_auths": [],"key_auths": [[pub_postingkey,1]]},
+	 pub_memokey,
+	 "{}", function(err, result) {
+	  console.log(err, result);
+	  document.getElementById("resultado").innerHTML = result + "Err: " + err;
+	});
+    }
+}
+
+function reset() {
+document.getElementById("newaccountname").value = '';
+document.getElementById("pubownerkey").value = '';
+document.getElementById("pubactivekey").value = '';
+document.getElementById("pubpostingkey").value = '';
+document.getElementById("pubmemokey").value = '';
+}
+
+function importFile() {
+    var importedFile = document.getElementById('fileobj').files[0];
+
+    var reader = new FileReader();
+    reader.onload = function() {
+      var fileContent = JSON.parse(reader.result);
+      console.log(fileContent.keys.owner);
+	document.getElementById("newaccountname").value = fileContent.account;
+	document.getElementById("pubownerkey").value = fileContent.keys.owner;
+	document.getElementById("pubactivekey").value = fileContent.keys.active;
+	document.getElementById("pubpostingkey").value = fileContent.keys.posting;
+	document.getElementById("pubmemokey").value = fileContent.keys.memo;
+      // Do something with fileContent
+      // document.getElementById('json-file').innerHTML = fileContent;  
+    };
+    reader.readAsText(importedFile); 
+}
+
+
+</script>
+</body>
+</html>
